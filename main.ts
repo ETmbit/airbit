@@ -1,4 +1,4 @@
-//% color=#0fbc11 icon=""
+//% color=#0fbc11 icon="\uf1d8"
 //% block="Airbit"
 //% block.loc.nl="Airbit"
 namespace Airbit {

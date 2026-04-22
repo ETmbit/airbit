@@ -4,8 +4,7 @@
     "dependencies": {
         "core": "*",
         "radio": "*",
-        "microphone": "*",
-        "gamepad": "github:etmbit/gamepad#b57eba2b29537f34cd4fda189c23e7dc1dd6fa6f"
+        "microphone": "*"
     },
     "files": [
         "main.blocks",
