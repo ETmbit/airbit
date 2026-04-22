@@ -56,22 +56,57 @@ namespace Airbit {
     //% block="let the drone descend"
     //% block.loc.nl="laat de drone dalen"
     export function throttleDescend() {
-        Airbit.throttle = 40
+        while (Airbit.throttle > 40) {
+            Airbit.throttle -= 5
+            basic.pause(100)
+        }
     }
 
     //% block="let the drone ascend"
     //% block.loc.nl="laat de drone stijgen"
     export function throttleAscend() {
-        Airbit.throttle = 80
+        while (Airbit.throttle < 100) {
+            Airbit.throttle += 5
+            basic.pause(100)
+        }
     }
 
     //% block="let the drone hover still"
     //% block.loc.nl="laat de drone stil hangen"
-    export function rollNone() {
-        Airbit.throttle = 60
+    export function still() {
         Airbit.roll = 0
         Airbit.pitch = 0
         Airbit.yaw = 0
+        while (Airbit.throttle > 70) {
+            Airbit.throttle -= 5
+            basic.pause(100)
+        }
+        while (Airbit.throttle < 70) {
+            Airbit.throttle += 5
+            basic.pause(100)
+        }
+    }
+
+    //% block="let the drone take off"
+    //% block.loc.nl="laat de drone opstijgen"
+    export function takeOff() {
+        Airbit.arm = 1
+        throttleAscend()
+        basic.pause(3000)
+        still()
+    }
+
+    //% block="put the drone in stanby mode"
+    //% block.loc.nl="zet de drone in standby"
+    export function standby() {
+        clear()
+        Airbit.arm = 1
+    }
+
+    //% block="put the drone in stop mode"
+    //% block.loc.nl="zet de drone uit"
+    export function stop() {
+        clear()
     }
 
     //% block="make an emergancy stop"
