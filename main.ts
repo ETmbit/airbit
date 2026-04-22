@@ -74,6 +74,7 @@ namespace Airbit {
         Airbit.yaw = 0
     }
 
+    //% block="make an emergancy stop"
     //% block.loc.nl="maak een noodstop"
     export function emergancyStop() {
         clear()
