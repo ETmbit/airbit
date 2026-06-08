@@ -1232,12 +1232,14 @@ namespace AirBit {
     //% block="set the motors in standby"
     //% block.loc.nl="zet de motoren in standby"
     export function standby() {
+        throttle = 0
         arm = 1
     }
 
     //% block="turn the motors off"
     //% block.loc.nl="zet de motoren uit"
     export function freeze() {
+        throttle = 0
         arm = 0
     }
 
