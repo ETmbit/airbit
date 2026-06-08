@@ -1222,26 +1222,26 @@ namespace AirBit {
         }
     }
 
-    //% block="Battery Level"
-    //% block.loc.nl="Batterijniveau"
+    //% block="battery Level"
+    //% block.loc.nl="batterijniveau"
     export function batteryLevel() {
         return Math.map(mVoltBattery, 3400, 4200, 0, 100)
     }
 
-    // block="set the motors in standby"
-    // block.loc.nl="zet de motoren in standby"
+    //% block="set the motors in standby"
+    //% block.loc.nl="zet de motoren in standby"
     export function standby() {
         arm = 1
     }
 
-    // block="turn the motors off"
-    // block.loc.nl="zet de motoren uit"
+    //% block="turn the motors off"
+    //% block.loc.nl="zet de motoren uit"
     export function freeze() {
         arm = 0
     }
 
-    // block="lift off"
-    // block.loc.nl="stijg op"
+    //% block="lift off"
+    //% block.loc.nl="stijg op"
     export function levitate() {
         throttle = 40       // warm up
         basic.pause(500)
@@ -1250,47 +1250,47 @@ namespace AirBit {
         throttle = 55       // hang still
    }
 
-    // block="land"
-    // block.loc.nl="land"
+    //% block="land"
+    //% block.loc.nl="land"
     export function land() {
         setThrottle(40)
         basic.pause(5000)
         setThrottle(0)
     }
 
-    // subcategory="Jargon"
-    // block="set arm to %value"
-    // block.loc.nl="stel de arm in op %value"
+    //% subcategory="Jargon"
+    //% block="set arm to %value"
+    //% block.loc.nl="stel de arm in op %value"
     export function setArm(value: boolean) {
         arm = (value ? 1 : 0);
     }
 
-    // subcategory="Jargon"
-    // block="set throttle to %value"
-    // block.loc.nl="stel de throttle in op %value"
+    //% subcategory="Jargon"
+    //% block="set throttle to %value"
+    //% block.loc.nl="stel de throttle in op %value"
     export function setThrottle(value: number) {
         throttle = Math.constrain(value, 0, mVoltBattery < 3400 ? 75 : 100)
     }
 
-    // subcategory="Jargon"
-    // block="set pitch to %value"
-    // block.loc.nl="stel de pitch in op %value"
+    //% subcategory="Jargon"
+    //% block="set pitch to %value"
+    //% block.loc.nl="stel de pitch in op %value"
     export function setPitch(value: number) {
         pitch = expo(value) / -3
         pitch = Math.constrain(pitch, -15, 15)
     }
 
-    // subcategory="Jargon"
-    // block="set roll to %value"
-    // block.loc.nl="stel de roll in op %value"
+    //% subcategory="Jargon"
+    //% block="set roll to %value"
+    //% block.loc.nl="stel de roll in op %value"
     export function setRoll(value: number) {
         roll = expo(value) / 3
         roll = Math.constrain(roll, -15, 15)
     }
 
-    // subcategory="Jargon"
-    // block="set yaw to %value"
-    // block.loc.nl="stel de yaw in op %value"
+    //% subcategory="Jargon"
+    //% block="set yaw to %value"
+    //% block.loc.nl="stel de yaw in op %value"
     export function setYaw(value: number) {
         yaw += value * 0.1
     }
