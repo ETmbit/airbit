@@ -523,6 +523,10 @@ namespace EtTiltpad {
 //  airbit.ts  //
 /////////////////
 
+//% icon="\uf1d8"
+//% color="#FF7733"
+//% block="Drone"
+//% block.loc.nl="Drone"
 namespace AirBit {
 
     let radioReceivedTime = 0   // used to check radio connection
@@ -632,9 +636,6 @@ namespace AirBit {
     /**
      * Drone start up
      */
-
-    radio.setGroup(7)
-    basic.showNumber(7)
 
     startupBatteryCheck()
     basic.pause(1000)
