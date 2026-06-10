@@ -564,8 +564,8 @@ namespace AirBit {
     let imuRoll = 0
     let imuYaw = 0
 
-    let yawP = 5
-    let yawD = 70
+    let yawP = 3
+    let yawD = 0
 
     let pitchCorrection = 0
     let rollCorrection = 0
@@ -586,9 +586,15 @@ namespace AirBit {
     let pitchIdiff = 0
     let rollIdiff = 0
 
-    const ROLLPITCH_P = 0.5 // was 0.9
-    const ROLLPITCH_I = 0 // was 0.004
-    const ROLLPITCH_D = 15 // was 15
+    const ROLLPITCH_P = 2.8
+    const ROLLPITCH_I = 0.003
+    const ROLLPITCH_D = 0
+
+    const ROLL_RATE_D = 0.15
+    const PITCH_RATE_D = 0.15
+    const YAW_RATE_D = 0.40
+
+    const LOOPTIME_MS = 10
 
     let accPitch = 0
     let accRoll = 0
@@ -663,7 +669,7 @@ namespace AirBit {
         imuRead()
         // Calculate absolute Roll, Pitch and Yaw angles by fusion of gyro and accelerometer together.
         imuFusion()
-        basic.pause(1)
+        basic.pause(LOOPTIME_MS)
         lostSignalCheck()
 
         // The "magic" algorithm that stabilises the drone based on setpoint angle and actual angle,
@@ -876,7 +882,7 @@ namespace AirBit {
     export function imuCalibrate() {
         gyroXcalibration = 0
         gyroYcalibration =
-        gyroZcalibration = 0
+            gyroZcalibration = 0
         let steadyCount = 0
         let filterShake = 0
         let filterDelta = 0
@@ -922,12 +928,12 @@ namespace AirBit {
             basic.pause(20)
         }
 
-        for (let index = 0; index < 100; index++) {
+        for (let index = 0; index < 500; index++) {
             imuRead()
             gyroXcalibration += gyroX
             gyroYcalibration += gyroY
             gyroZcalibration += gyroZ
-            basic.pause(5)
+            basic.pause(2)
         }
         gyroXcalibration = gyroXcalibration / 100
         gyroYcalibration = gyroYcalibration / 100
@@ -961,7 +967,7 @@ namespace AirBit {
         accZ = pins.i2cReadNumber(104, NumberFormat.Int16BE, false)
     }
 
-   export function imuFusion() {
+    export function imuFusion() {
         let looptime = input.runningTime() - fusionTime
         fusionTime = input.runningTime()
         accPitch = (-57.295 * Math.atan2(accY, accZ)) - accPitchOffset
@@ -970,8 +976,8 @@ namespace AirBit {
         gyroXdelta = (gyroX - gyroXcalibration) * looptime * -0.00000762939
         gyroYdelta = (gyroY - gyroYcalibration) * looptime * 0.00000762939
         gyroZdelta = (gyroZ - gyroZcalibration) * looptime * -0.00000762939
-        imuRoll = (gyroYdelta + imuRoll) * 0.99 + accRoll * 0.01
-        imuPitch = (gyroXdelta + imuPitch) * 0.99 + accPitch * 0.01
+        imuRoll = (gyroYdelta + imuRoll) * 0.98 + accRoll * 0.02
+        imuPitch = (gyroXdelta + imuPitch) * 0.98 + accPitch * 0.02
         imuYaw = gyroZdelta + imuYaw
     }
 
@@ -1013,48 +1019,53 @@ namespace AirBit {
     export function stabilisePid() {
 
         rollDiff = roll - imuRoll
-        pitchDiff = pitch - imuPitch      // Reversing the pitch
+        pitchDiff = pitch - imuPitch
         yawDiff = yaw - imuYaw
-        rollDdiff = rollDiff - lastRollDiff
-        pitchDdiff = pitchDiff - lastPitchDiff
-        yawDdiff = yawDiff - lastYawDiff
 
-        lastRollDiff = rollDiff
-        lastPitchDiff = pitchDiff
-        lastYawDiff = yawDiff
+        let iRange = 5
+        let iLimit = 4
+        let yawLimit = 50
 
-        let iRange = 5      //  Maximal error that will increase Roll and Pitch integral
-        let iLimit = 4      //  Maximal correcton that can be added by integral
-        let yawLimit = 50   //  Maximal yaw correction 
+        if (throttle > 50) {
 
-        if (throttle > 50) {    // Prevent windup before flight
+            if (Math.abs(rollDiff) < iRange) rollIdiff += rollDiff
+            if (Math.abs(pitchDiff) < iRange) pitchIdiff += pitchDiff
 
-            if (rollDiff > - iRange && rollDiff < iRange) {
-                rollIdiff += rollDiff
-            }
-            if (pitchDiff > - iRange && pitchDiff < iRange) {
-                pitchIdiff += pitchDiff
-            }
-
+        } else {
+            rollIdiff *= 0.95
+            pitchIdiff *= 0.95
         }
 
-        let rollIcorrection = rollIdiff * ROLLPITCH_I
-        let pitchIcorrection = pitchIdiff * ROLLPITCH_I
+        let rollIcorrection = Math.constrain(rollIdiff * ROLLPITCH_I, -iLimit, iLimit)
+        let pitchIcorrection = Math.constrain(pitchIdiff * ROLLPITCH_I, -iLimit, iLimit)
 
-        rollIcorrection = Math.constrain(rollIcorrection, -iLimit, iLimit)     // Limit I (preventing it from growing out of proportions)
-        pitchIcorrection = Math.constrain(pitchIcorrection, -iLimit, iLimit)
+        let rollRate = (gyroY - gyroYcalibration) * 0.0001526
+        let pitchRate = (gyroX - gyroXcalibration) * -0.0001526
+        let yawRate = (gyroZ - gyroZcalibration) * 0.0001526
 
-        rollCorrection = rollDiff * ROLLPITCH_P + rollIcorrection + rollDdiff * ROLLPITCH_D
-        pitchCorrection = pitchDiff * ROLLPITCH_P + pitchIcorrection + pitchDdiff * ROLLPITCH_D
+        rollCorrection =
+            rollDiff * ROLLPITCH_P +
+            rollIcorrection -
+            rollRate * ROLL_RATE_D
 
-        yawCorrection = yawDiff * yawP + yawDdiff * yawD
+        pitchCorrection =
+            pitchDiff * ROLLPITCH_P +
+            pitchIcorrection -
+            pitchRate * PITCH_RATE_D
+
+        yawCorrection =
+            yawDiff * yawP -
+            yawRate * YAW_RATE_D
+
         yawCorrection = Math.constrain(yawCorrection, -yawLimit, yawLimit)
+
         throttleScaled = throttle * 2.55
 
         motorA = Math.round(throttleScaled + rollCorrection + pitchCorrection + yawCorrection)
         motorB = Math.round(throttleScaled + rollCorrection - pitchCorrection - yawCorrection)
         motorC = Math.round(throttleScaled - rollCorrection + pitchCorrection - yawCorrection)
         motorD = Math.round(throttleScaled - rollCorrection - pitchCorrection + yawCorrection)
+
         motorA = Math.constrain(motorA, 0, 255)
         motorB = Math.constrain(motorB, 0, 255)
         motorC = Math.constrain(motorC, 0, 255)
@@ -1251,7 +1262,7 @@ namespace AirBit {
         throttle = 70       // levitate
         basic.pause(5000)
         throttle = 55       // hang still
-   }
+    }
 
     //% block="land"
     //% block.loc.nl="land"
